@@ -64,12 +64,12 @@ class VOCEvaluator():
         cv2.putText(image, caption, (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 2)
 
     @staticmethod
-    def preprocess_detection(det, scale, image):
+    def preprocess_detection(det, scale, image_shape):
         det[0, :, :4] /= scale
         det[:, :, 0] = np.maximum(0, det[:, :, 0])
         det[:, :, 1] = np.maximum(0, det[:, :, 1])
-        det[:, :, 2] = np.minimum(image.shape[1], det[:, :, 2])
-        det[:, :, 3] = np.minimum(image.shape[0], det[:, :, 3])
+        det[:, :, 2] = np.minimum(image_shape[1], det[:, :, 2])
+        det[:, :, 3] = np.minimum(image_shape[0], det[:, :, 3])
 
     def save_image(self, image, image_id):
         if self.save:
@@ -78,6 +78,8 @@ class VOCEvaluator():
     def populate_detections(self):
         for i in range(self.generator.size()):
             image = self.generator.load_image(i)
+
+            original_image_shape = image.shape
             if self.save:
                 draw = image.copy()
 
@@ -87,7 +89,7 @@ class VOCEvaluator():
             _, _, det = self.model.predict_on_batch(np.expand_dims(image, axis=0))
 
             # Rescale and clip detection bboxes to new image.
-            self.preprocess_detection(det, scale, image)
+            self.preprocess_detection(det, scale, original_image_shape)
 
             # Obtain indices for scores where they are over the score threshold.
             chosen_scores_indices = np.where(det[0,:,4:] > self.threshold)
