@@ -195,29 +195,29 @@ def retinanet(
     pyramid = __build_pyramid(submodels, features)
     anchors = __build_anchors(anchor_parameters, features)
 
-    # print("Anchors shape", anchors.shape)
-    # for i, pyramid_item in enumerate(pyramid):
-    #     print("Pyramid shape at list pos %d : " % i, pyramid[i].shape)
-    #
-    # initial_model_output = [anchors] + pyramid
-    # for i, output in enumerate(initial_model_output):
-    #     print("Initial model output shape at list pos %d : " % i, initial_model_output[i].shape)
-    #
-    # feature_list = []
-    #
-    # C3_flat = keras.layers.Reshape((-1, 4))(C3)
-    # C4_flat = keras.layers.Reshape((-1, 4))(C4)
-    # C5_flat = keras.layers.Reshape((-1, 4))(C5)
-    #
-    # feature_list.append(C3_flat)
-    # feature_list.append(C3_flat)
-    # feature_list.append(C3_flat)
-    #
-    # print(C3_flat.shape, C4_flat.shape, C5_flat.shape)
-    #
-    # model_output = [anchors] + pyramid + feature_list
-    # for i, output in enumerate(model_output):
-    #     print("Model output shape at list pos %d : " % i, model_output[i].shape)
+    print("Anchors shape", anchors.shape)
+    for i, pyramid_item in enumerate(pyramid):
+        print("Pyramid shape at list pos %d : " % i, pyramid[i].shape)
+
+    initial_model_output = [anchors] + pyramid
+    for i, output in enumerate(initial_model_output):
+        print("Initial model output shape at list pos %d : " % i, initial_model_output[i].shape)
+
+    feature_list = []
+
+    C3_flat = keras.layers.Reshape((-1, 4))(C3)
+    C4_flat = keras.layers.Reshape((-1, 4))(C4)
+    C5_flat = keras.layers.Reshape((-1, 4))(C5)
+
+    feature_list.append(C3_flat)
+    feature_list.append(C3_flat)
+    feature_list.append(C3_flat)
+
+    print(C3_flat.shape, C4_flat.shape, C5_flat.shape)
+
+    model_output = [anchors] + pyramid + feature_list
+    for i, output in enumerate(model_output):
+        print("Model output shape at list pos %d : " % i, model_output[i].shape)
 
     return keras.models.Model(inputs=inputs, outputs=[anchors] + pyramid, name=name)
 
