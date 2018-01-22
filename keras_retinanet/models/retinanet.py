@@ -38,7 +38,7 @@ def default_pyramid_cnn(
     pyramid_feature_size=256,
     prior_probability=0.01,
     classification_feature_size=256,
-    name='default_pyramid_cnn'
+    name='classification_submodel'
 ):
     options = {
         'kernel_size' : 3,
@@ -52,7 +52,7 @@ def default_pyramid_cnn(
         outputs = keras.layers.Conv2D(
             filters=classification_feature_size,
             activation='relu',
-            name='pyramid_cnn_{}'.format(i),
+            name='pyramid_classification_{}'.format(i),
             kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
             bias_initializer='zeros',
             **options
@@ -62,12 +62,12 @@ def default_pyramid_cnn(
         filters=num_classes * num_anchors,
         kernel_initializer=keras.initializers.zeros(),
         bias_initializer=initializers.PriorProbability(probability=prior_probability),
-        name='pyramid_cnn',
+        name='pyramid_classification',
         **options
     )(outputs)
 
     # flatten output
-    outputs = keras.layers.Reshape((-1, num_classes), name='pyramid_reshape')(outputs)
+    outputs = keras.layers.Reshape((-1, num_classes), name='pyramid_classification_reshape')(outputs)
 
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
@@ -273,6 +273,7 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
     anchors        = model.outputs[0]
     regression     = model.outputs[1]
     classification = model.outputs[2]
+    featurevector  = model.outputs[3]
 
     print("Model outputs has {} items.".format(len(model.outputs)))
     for i, output in enumerate(model.outputs):
@@ -280,11 +281,11 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
 
     # apply predicted regression to anchors
     boxes      = layers.RegressBoxes(name='boxes')([anchors, regression])
-    detections = keras.layers.Concatenate(axis=2)([boxes, classification] + model.outputs[3:])
+    detections = keras.layers.Concatenate(axis=2)([boxes, classification])
 
     # additionally apply non maximum suppression
     if nms:
         detections = layers.NonMaximumSuppression(name='nms')([boxes, classification, detections])
 
     # construct the model
-    return keras.models.Model(inputs=inputs, outputs=model.outputs[1:] + [detections], name=name)
+    return keras.models.Model(inputs=inputs, outputs=model.outputs[1:3] + [detections] + [featurevector], name=name)
