@@ -274,6 +274,10 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
     regression     = model.outputs[1]
     classification = model.outputs[2]
 
+    print("Model outputs has {} items.".format(len(model.outputs)))
+    for i, output in enumerate(model.outputs):
+        print("Model output at idx {} has shape {}".format(i, output.shape))
+
     # apply predicted regression to anchors
     boxes      = layers.RegressBoxes(name='boxes')([anchors, regression])
     detections = keras.layers.Concatenate(axis=2)([boxes, classification] + model.outputs[3:])
