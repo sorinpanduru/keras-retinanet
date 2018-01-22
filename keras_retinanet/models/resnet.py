@@ -78,6 +78,16 @@ def resnet_retinanet(num_classes, backbone=50, inputs=None, weights='imagenet', 
     # create the full model
     model = retinanet.retinanet_bbox(inputs=inputs, num_classes=num_classes, backbone=resnet, **kwargs)
 
+    # Disable training for resnet
+    for layer in resnet.layers:
+        if layer in resnet.outputs:
+            print("Not touching output layers")
+            continue
+        print("{} NOT FROZEN".format(layer) if layer.trainable is True else "")
+        layer.trainable = False
+
+    print("All Frozen")
+
     # optionally load weights
     if weights_path:
         model.load_weights(weights_path, by_name=True, skip_mismatch=skip_mismatch)
