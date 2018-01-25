@@ -84,8 +84,9 @@ def default_featurevector_model(
         'padding'     : 'same',
     }
 
-    inputs = keras.layers.Input(shape=pyramid_cnn_output[0].shape)
+    inputs = keras.layers.Input(shape=(None, num_anchors))
     outputs = inputs
+    outputs = keras.layers.Lambda(lambda x: x)(outputs)
 
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
@@ -97,7 +98,7 @@ def default_classification_model(
     name='classification'
 ):
 
-    inputs = keras.layers.Input(shape=pyramid_cnn_output[0].shape)
+    inputs = keras.layers.Input(shape=(None, num_classes))
     outputs = inputs
     # reshape output and apply sigmoid
     outputs = keras.layers.Activation('sigmoid', name='pyramid_classification_sigmoid')(outputs)
@@ -136,7 +137,6 @@ def default_regression_model(
     outputs = keras.layers.Reshape((-1, 4), name='pyramid_regression_reshape')(outputs)
 
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
-
 
 def __create_pyramid_features(C3, C4, C5, feature_size=256):
     # upsample C5 to get P5 from the FPN paper
@@ -204,9 +204,7 @@ def __build_model_pyramid(name, model, features):
     pyramid_outputs = []
 
     for i, f in enumerate(features):
-        output = model(f)
-        print("Output for feature #{} with shape {} has shape {}".format(i, f.shape, output.shape))
-        pyramid_outputs.append(output)
+        pyramid_outputs.append(model(f))
 
     return keras.layers.Concatenate(axis=1, name=name)(pyramid_outputs)
 
@@ -258,9 +256,6 @@ def retinanet(
 
     pyramid_outputs = [pyramid[0], class_output]
 
-    for i, pyramid_level in enumerate(pyramid):
-        print("Pyramid item at {} has shape {}".format(i, pyramid_level.shape))
-
     anchors = __build_anchors(anchor_parameters, features)
 
     return keras.models.Model(inputs=inputs, outputs=[anchors] + pyramid_outputs + [featurevector_output], name=name)
@@ -274,10 +269,6 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
     regression     = model.outputs[1]
     classification = model.outputs[2]
     featurevector  = model.outputs[3]
-
-    print("Model outputs has {} items.".format(len(model.outputs)))
-    for i, output in enumerate(model.outputs):
-        print("Model output at idx {} has shape {}".format(i, output.shape))
 
     # apply predicted regression to anchors
     boxes      = layers.RegressBoxes(name='boxes')([anchors, regression])
