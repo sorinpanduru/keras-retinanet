@@ -81,9 +81,7 @@ def resnet_retinanet(num_classes, backbone=50, inputs=None, weights='imagenet', 
     # Disable training for resnet
     for layer in resnet.layers:
         if layer in resnet.outputs:
-            print("Not touching output layers")
             continue
-        print("{} NOT FROZEN".format(layer) if layer.trainable is True else "")
         layer.trainable = False
 
     print("All Frozen")
