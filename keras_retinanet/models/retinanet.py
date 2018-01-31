@@ -282,8 +282,8 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
     classification = model.outputs[2]
     featurevector  = model.outputs[3:]
 
-    features_concat = [keras.layers.Reshape((-1, num_classes))(pyramid_feature) for pyramid_feature in featurevector]
-    features = keras.layers.Concatenate(axis=1)(features_concat)
+    # features_concat = [keras.layers.Reshape((-1, num_classes))(pyramid_feature) for pyramid_feature in featurevector]
+    # features = keras.layers.Concatenate(axis=1)(features_concat)
 
     # apply predicted regression to anchors
     boxes      = layers.RegressBoxes(name='boxes')([anchors, regression])
@@ -297,4 +297,4 @@ def retinanet_bbox(inputs, num_classes, nms=True, name='retinanet-bbox', *args, 
         features = detections[1]
 
     # construct the model
-    return keras.models.Model(inputs=inputs, outputs=model.outputs[1:3] + [detections] + [features], name=name)
+    return keras.models.Model(inputs=inputs, outputs=model.outputs[1:3] + [detections] + featurevector, name=name)

@@ -78,7 +78,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         image, scale = generator.resize_image(image)
 
         # run network
-        _, _, detections = model.predict_on_batch(np.expand_dims(image, axis=0))
+        _, _, detections, P1, P2, P3, P4, P5 = model.predict_on_batch(np.expand_dims(image, axis=0))
 
         # clip to image shape
         detections[:, :, 0] = np.maximum(0, detections[:, :, 0])
