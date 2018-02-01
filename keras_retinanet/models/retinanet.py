@@ -138,6 +138,7 @@ def default_regression_model(
 
     return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
+
 def __create_pyramid_features(C3, C4, C5, feature_size=256):
     # upsample C5 to get P5 from the FPN paper
     P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='P5')(C5)
